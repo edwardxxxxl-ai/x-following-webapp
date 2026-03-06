@@ -1,0 +1,247 @@
+:root {
+  color-scheme: light;
+  --bg: #f2efe8;
+  --ink: #1d1d1f;
+  --muted: #5f5c57;
+  --panel: rgba(255, 250, 242, 0.82);
+  --line: rgba(29, 29, 31, 0.12);
+  --accent: #bc4f2c;
+  --accent-deep: #8b3117;
+  --success: #236b41;
+  --error: #9a2e1f;
+  --shadow: 0 24px 60px rgba(88, 53, 34, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(188, 79, 44, 0.12), transparent 28%),
+    radial-gradient(circle at top right, rgba(76, 119, 94, 0.12), transparent 26%),
+    linear-gradient(180deg, #f7f4ee 0%, var(--bg) 100%);
+}
+
+.app-shell {
+  width: min(1080px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 56px 0 72px;
+}
+
+.hero {
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.6rem, 6vw, 5rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.lede {
+  max-width: 700px;
+  margin: 18px 0 0;
+  font-size: 1.1rem;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+}
+
+.field {
+  display: grid;
+  gap: 10px;
+}
+
+.field span {
+  font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  overflow: hidden;
+}
+
+.prefix {
+  padding: 0 0 0 16px;
+  font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+  color: var(--muted);
+}
+
+input {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  padding: 16px 18px 16px 8px;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+button {
+  appearance: none;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  color: #fff9f2;
+  padding: 16px 20px;
+  font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+  font-size: 0.98rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.notes {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.notes p,
+.notes ul {
+  margin: 0;
+}
+
+.notes ul {
+  padding-left: 18px;
+  margin-top: 10px;
+  line-height: 1.6;
+}
+
+.output-panel {
+  min-height: 420px;
+}
+
+.output-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: start;
+}
+
+.output-label {
+  margin: 0 0 8px;
+  font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+}
+
+h2 {
+  margin: 0;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.actions button {
+  padding: 12px 14px;
+  font-size: 0.9rem;
+}
+
+.status {
+  margin: 18px 0 16px;
+  font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+  font-size: 0.95rem;
+}
+
+.status.idle,
+.status.loading {
+  color: var(--muted);
+}
+
+.status.success {
+  color: var(--success);
+}
+
+.status.error {
+  color: var(--error);
+}
+
+.output {
+  margin: 0;
+  min-height: 280px;
+  max-height: 65vh;
+  overflow: auto;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(34, 25, 19, 0.92);
+  color: #f7f0e7;
+  font: 0.92rem/1.55 "SFMono-Regular", "Menlo", "Monaco", monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    width: min(100vw - 20px, 1080px);
+    padding-top: 28px;
+  }
+
+  .form,
+  .output-head {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .actions button,
+  button[type="submit"] {
+    width: 100%;
+  }
+}

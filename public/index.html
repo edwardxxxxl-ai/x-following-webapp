@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>X Following Exporter</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <p class="eyebrow">Local Arc Workflow</p>
+        <h1>X Following Exporter</h1>
+        <p class="lede">
+          Input an X username, reuse your logged-in Arc session, and export that account's following
+          list as Markdown.
+        </p>
+      </section>
+
+      <section class="panel">
+        <form id="export-form" class="form">
+          <label class="field">
+            <span>X username</span>
+            <div class="input-wrap">
+              <span class="prefix">@</span>
+              <input id="username" name="username" type="text" placeholder="odysseyml" autocomplete="off" maxlength="15" required />
+            </div>
+          </label>
+          <button id="submit-button" type="submit">Export following list</button>
+        </form>
+
+        <div class="notes">
+          <p>Requirements:</p>
+          <ul>
+            <li>Arc must be installed and open.</li>
+            <li>You must already be logged into X inside Arc.</li>
+            <li>The app will temporarily reuse your current Arc tab, then restore it.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="panel output-panel">
+        <div class="output-head">
+          <div>
+            <p class="output-label">Output</p>
+            <h2 id="output-title">No export yet</h2>
+          </div>
+          <div class="actions">
+            <button id="copy-button" type="button" disabled>Copy</button>
+            <button id="download-button" type="button" disabled>Download .md</button>
+          </div>
+        </div>
+        <p id="status" class="status idle">Ready.</p>
+        <pre id="output" class="output"></pre>
+      </section>
+    </main>
+
+    <script>
+      const form = document.getElementById("export-form");
+      const usernameInput = document.getElementById("username");
+      const submitButton = document.getElementById("submit-button");
+      const copyButton = document.getElementById("copy-button");
+      const downloadButton = document.getElementById("download-button");
+      const output = document.getElementById("output");
+      const outputTitle = document.getElementById("output-title");
+      const status = document.getElementById("status");
+
+      let currentMarkdown = "";
+      let currentFilename = "x-following.md";
+
+      function setStatus(message, mode) {
+        status.textContent = message;
+        status.className = "status " + mode;
+      }
+
+      function setBusy(busy) {
+        submitButton.disabled = busy;
+        submitButton.textContent = busy ? "Exporting..." : "Export following list";
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const username = usernameInput.value.trim().replace(/^@+/, "");
+        if (!username) {
+          setStatus("Enter a username first.", "error");
+          return;
+        }
+
+        setBusy(true);
+        setStatus("Switching through Arc and fetching the following list...", "loading");
+        output.textContent = "";
+        outputTitle.textContent = "Export in progress";
+        copyButton.disabled = true;
+        downloadButton.disabled = true;
+
+        try {
+          const response = await fetch("/api/export", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username }),
+          });
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.error || "Export failed");
+          }
+
+          currentMarkdown = payload.markdown;
+          currentFilename = payload.filename;
+          output.textContent = payload.markdown;
+          outputTitle.textContent = "@" + payload.username + " · " + payload.total + " accounts";
+          setStatus("Export complete.", "success");
+          copyButton.disabled = false;
+          downloadButton.disabled = false;
+        } catch (error) {
+          currentMarkdown = "";
+          outputTitle.textContent = "Export failed";
+          output.textContent = "";
+          setStatus(error.message, "error");
+        } finally {
+          setBusy(false);
+        }
+      });
+
+      copyButton.addEventListener("click", async () => {
+        if (!currentMarkdown) return;
+        await navigator.clipboard.writeText(currentMarkdown);
+        setStatus("Markdown copied to clipboard.", "success");
+      });
+
+      downloadButton.addEventListener("click", () => {
+        if (!currentMarkdown) return;
+        const blob = new Blob([currentMarkdown], { type: "text/markdown;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = currentFilename;
+        anchor.click();
+        URL.revokeObjectURL(url);
+        setStatus("Markdown download started.", "success");
+      });
+    </script>
+  </body>
+</html>
