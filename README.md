@@ -1,8 +1,12 @@
-# X Following Markdown Exporter
+# Xfinder
 
 [中文说明](#中文说明) | [English](#english)
 
 ![App Screenshot](./assets/app-screenshot.png)
+
+> Find who smart accounts follow, overlap them, and surface hidden nodes.
+>
+> 通过别人的 X 关注图谱，发现你原本不认识的小众关键账号。
 
 ## English
 
@@ -49,8 +53,8 @@ This makes the tool easy to run locally, but also tightly couples it to:
 ### Run Locally
 
 ```bash
-git clone https://github.com/edwardxxxxl-ai/x-following-markdown-exporter.git
-cd x-following-markdown-exporter
+git clone https://github.com/edwardxxxxl-ai/xfinder.git
+cd xfinder
 npm start
 ```
 
@@ -181,8 +185,8 @@ Review the code before using it with any sensitive account.
 ### 本地运行
 
 ```bash
-git clone https://github.com/edwardxxxxl-ai/x-following-markdown-exporter.git
-cd x-following-markdown-exporter
+git clone https://github.com/edwardxxxxl-ai/xfinder.git
+cd xfinder
 npm start
 ```
 

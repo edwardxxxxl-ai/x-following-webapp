@@ -1,8 +1,8 @@
 {
-  "name": "x-following-markdown-exporter",
+  "name": "xfinder",
   "version": "1.0.0",
   "private": true,
-  "description": "Local Arc-powered X follow graph analyzer with overlap discovery, profile export, and research briefs.",
+  "description": "Find who smart accounts follow, overlap them, and surface hidden nodes.",
   "scripts": {
     "start": "node server.js"
   }

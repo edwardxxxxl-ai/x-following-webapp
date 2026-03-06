@@ -2,7 +2,7 @@
 
 ## Name
 
-X Following Markdown Exporter
+Xfinder
 
 ## Type
 
