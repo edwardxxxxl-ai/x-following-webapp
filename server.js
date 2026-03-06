@@ -116,18 +116,43 @@ function classifyTopics(profile) {
   return labels;
 }
 
+function computeDiscoveryScore(profile, seedCount) {
+  const overlapWeight = (profile.followed_by_count || 0) * 1000;
+  const topicWeight = (profile.topic_labels?.length || 0) * 35;
+  const bioWeight = profile.bio ? 15 : 0;
+  const verifiedPenalty = profile.verified ? 20 : 0;
+  const protectedPenalty = profile.protected ? 40 : 0;
+  const followerCount = Math.max(Number(profile.followers_count || 0), 0);
+  const smallButRealBonus =
+    followerCount >= 20 && followerCount <= 5000
+      ? 120
+      : followerCount > 5000 && followerCount <= 50000
+        ? 45
+        : followerCount < 20
+          ? -80
+          : -Math.min(220, Math.log10(followerCount + 1) * 55);
+  const concentrationBonus = seedCount > 1 ? ((profile.followed_by_count || 0) / seedCount) * 160 : 0;
+
+  return Math.round(overlapWeight + topicWeight + bioWeight + smallButRealBonus + concentrationBonus - verifiedPenalty - protectedPenalty);
+}
+
+function compareProfiles(left, right) {
+  if ((right.followed_by_count || 0) !== (left.followed_by_count || 0)) {
+    return (right.followed_by_count || 0) - (left.followed_by_count || 0);
+  }
+  if ((right.discovery_score || 0) !== (left.discovery_score || 0)) {
+    return (right.discovery_score || 0) - (left.discovery_score || 0);
+  }
+  if ((left.followers_count || 0) !== (right.followers_count || 0)) {
+    return (left.followers_count || 0) - (right.followers_count || 0);
+  }
+  return left.screen_name.localeCompare(right.screen_name);
+}
+
 function pickNotableAccounts(profiles) {
   return [...profiles]
-    .sort((left, right) => {
-      if ((right.followed_by_count || 0) !== (left.followed_by_count || 0)) {
-        return (right.followed_by_count || 0) - (left.followed_by_count || 0);
-      }
-      if (left.followers_count !== right.followers_count) {
-        return left.followers_count - right.followers_count;
-      }
-      return left.screen_name.localeCompare(right.screen_name);
-    })
-    .slice(0, 5)
+    .sort(compareProfiles)
+    .slice(0, 8)
     .map((profile) => ({
       screen_name: profile.screen_name,
       name: profile.name,
@@ -136,6 +161,7 @@ function pickNotableAccounts(profiles) {
       topic_labels: profile.topic_labels,
       followed_by_count: profile.followed_by_count || 0,
       followed_by: profile.followed_by || [],
+      discovery_score: profile.discovery_score || 0,
     }));
 }
 
@@ -160,6 +186,7 @@ function buildOutputs(usernames, profiles, overlapProfiles) {
   const overlapLines = overlapProfiles.slice(0, 25).map((profile) => {
     const extras = [];
     extras.push(`followed by ${profile.followed_by_count}/${usernames.length}`);
+    extras.push(`score: ${profile.discovery_score}`);
     if (profile.topic_labels.length) extras.push(`topics: ${profile.topic_labels.join(", ")}`);
     if (profile.bio) extras.push(profile.bio);
     return `- @${profile.screen_name} — ${extras.join(" | ")}`;
@@ -179,6 +206,7 @@ function buildOutputs(usernames, profiles, overlapProfiles) {
       if (profile.bio) detailParts.push(profile.bio);
       if (profile.followers_count !== null) detailParts.push(`followers: ${profile.followers_count}`);
       if (profile.followed_by_count) detailParts.push(`followed_by: ${profile.followed_by_count}/${usernames.length}`);
+      if (profile.discovery_score) detailParts.push(`score: ${profile.discovery_score}`);
       return `- @${profile.screen_name}${detailParts.length ? ` — ${detailParts.join(" | ")}` : ""}`;
     }),
   ];
@@ -190,6 +218,7 @@ function buildOutputs(usernames, profiles, overlapProfiles) {
     `- Seed accounts: ${usernames.length}`,
     `- Accounts analyzed: ${profiles.length}`,
     `- Overlap accounts: ${overlapProfiles.length}`,
+    "- Ranking logic: prioritize multi-seed overlap first, then rank for small-but-important accounts.",
     "",
     "## Topic signals",
     ...(topicSummary.length
@@ -205,6 +234,7 @@ function buildOutputs(usernames, profiles, overlapProfiles) {
           const extras = [];
           if (profile.name) extras.push(profile.name);
           if (profile.followed_by_count) extras.push(`followed by ${profile.followed_by_count}/${usernames.length}`);
+          extras.push(`score: ${profile.discovery_score}`);
           if (profile.topic_labels.length) extras.push(`topics: ${profile.topic_labels.join(", ")}`);
           extras.push(`followers: ${profile.followers_count}`);
           if (profile.bio) extras.push(profile.bio);
@@ -467,13 +497,13 @@ async function exportFollowing(usernamesInput) {
         ...profile,
         followed_by: [...profile.followed_by].sort(),
         followed_by_count: profile.followed_by.length,
+        discovery_score: 0,
       }))
-      .sort((left, right) => {
-        if (right.followed_by_count !== left.followed_by_count) {
-          return right.followed_by_count - left.followed_by_count;
-        }
-        return left.screen_name.localeCompare(right.screen_name);
-      });
+      .map((profile) => ({
+        ...profile,
+        discovery_score: computeDiscoveryScore(profile, usernames.length),
+      }))
+      .sort(compareProfiles);
 
     const overlapProfiles = profiles.filter((profile) => profile.followed_by_count > 1);
     const outputs = buildOutputs(usernames, profiles, overlapProfiles);

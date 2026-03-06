@@ -60,7 +60,7 @@
             <div id="overlap-accounts" class="mini-list"></div>
           </div>
           <div class="insight-card">
-            <p class="insight-label">Hidden nodes</p>
+            <p class="insight-label">Priority ranking</p>
             <div id="notable-accounts" class="mini-list"></div>
           </div>
         </div>
@@ -140,6 +140,8 @@
             account.followed_by_count +
             "/" +
             payload.usernames.length +
+            " | score " +
+            account.discovery_score +
             (account.bio ? " | " + account.bio : "");
           overlapAccounts.appendChild(row);
         }
@@ -154,6 +156,8 @@
             account.followed_by_count +
             "/" +
             payload.usernames.length +
+            " | score " +
+            account.discovery_score +
             " | " +
             (account.bio || account.name || "No bio");
           notableAccounts.appendChild(row);
@@ -205,7 +209,7 @@
           currentFiles = payload.files;
           renderOutput();
           outputTitle.textContent = payload.usernames.length + " seeds · " + payload.total + " accounts · " + payload.overlapCount + " overlaps";
-          outputMeta.textContent = "Includes bio, followers, topic labels, overlap count, JSON export, and a research brief.";
+          outputMeta.textContent = "Includes bio, followers, topic labels, overlap count, discovery score, JSON export, and a research brief.";
           sourceSummary.textContent = "Sources: " + payload.usernames.map((name) => "@" + name).join(", ");
           renderInsights(payload);
           setStatus("Export complete.", "success");
